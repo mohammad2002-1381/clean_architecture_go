@@ -1,11 +1,9 @@
 package domain
 
-import (
-	"time"
-)
+import "time"
 
 type Token struct {
-	BaseEntity[int32]
+	BaseEntity[uint]
 	Token        string    `gorm:"column:token;not null"`
 	RefreshToken string    `gorm:"column:refresh_token;not null"`
 	Expires      time.Time `gorm:"column:expires;not null"`
@@ -16,14 +14,14 @@ type Token struct {
 func NewToken(token, refreshToken string, userID int32) *Token {
 	now := time.Now().UTC()
 	return &Token{
-		BaseEntity: BaseEntity[int32]{
+		BaseEntity: BaseEntity[uint]{
 			CreatedAt: now,
 			UpdatedAt: now,
 		},
 		Token:        token,
 		RefreshToken: refreshToken,
 		UserID:       userID,
-		Expires:      now.AddDate(0, 1, 0),
+		Expires:      now.AddDate(0, 0, 1),
 	}
 }
 

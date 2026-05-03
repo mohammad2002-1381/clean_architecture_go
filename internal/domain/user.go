@@ -1,10 +1,5 @@
 package domain
 
-import (
-	"clean_architecture_go/internal/domain/events"
-	"time"
-)
-
 type UserRoleType string
 
 const (
@@ -13,7 +8,7 @@ const (
 )
 
 type User struct {
-	BaseEntity[int32]
+	BaseEntity[uint]
 	FirstName    string       `gorm:"column:first_name;not null"`
 	LastName     string       `gorm:"column:last_name;not null"`
 	Email        string       `gorm:"column:email;unique;not null"`
@@ -22,33 +17,37 @@ type User struct {
 	IsActive     bool         `gorm:"column:is_active;default:true"`
 }
 
-func NewUser(firstName, lastName, email string, role UserRoleType, passwordHash string, isActive bool) *User {
-	now := time.Now().UTC()
-	user := &User{
-		BaseEntity: BaseEntity[int32]{
-			CreatedAt: now,
-			UpdatedAt: now,
-		},
-		FirstName:    firstName,
-		LastName:     lastName,
-		Email:        email,
-		PasswordHash: passwordHash,
-		Role:         role,
-		IsActive:     isActive,
-	}
-
-	// Add domain event
-	user.AddDomainEvent(events.UserRegisteredEvent{
-		UserID:    0, // Will be set after DB insert
-		Email:     email,
+func NewUser(firstName, lastName, email, passwordHash string, role UserRoleType, isActive bool) User {
+	return User{
 		FirstName: firstName,
-		LastName:  lastName,
-		Role:      string(role),
-	}, events.UserRegisteredEventHandler {}) // Handler will be set by UnitOfWork
-
-	return user
+		LastName: lastName,
+		Email: email,
+		PasswordHash: passwordHash,
+		Role: role,
+		IsActive: isActive,
+	}
 }
 
-func (u *User) UpdateBeforeSave() {
-	u.UpdatedAt = time.Now().UTC()
+func (u *User) ActiveUser() {
+	u.IsActive = true
+}
+
+func (u *User) DisactiveUser() {
+	u.IsActive = false
+}
+
+func (u *User) SetFirstName(value string) {
+	u.FirstName = value
+}
+
+func (u *User) SetLastName(value string) {
+	u.LastName = value
+}
+
+func (u *User) SetEmail(value string) {
+	u.Email = value
+}
+
+func (u *User) SetRole(value UserRoleType) {
+	u.Role = value
 }

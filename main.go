@@ -1,42 +1,22 @@
-package main
+package goca
 
 import (
-	"fmt"
-	"time"
+	"go-ca/cmd/api"
 )
 
-type BaseEntity[TID comparable] struct {
-	ID        TID
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
+// @title           Clean Architecture API
+// @version         1.0
+// @description     This is a sample server built with Clean Architecture in Go.
 
-type IBaseEntity[TID comparable] interface {
-	Get()
-}
+// @contact.name   API Support
+// @contact.email  support@example.com
 
-func (b BaseEntity[TID]) Get() {}
+// @host      localhost:8080
+// @BasePath  /api/v1
 
-type User struct {
-	BaseEntity[int32]
-
-	FirstName string
-	LastName  string
-	Email     string
-}
-
-type T struct {
-	i int32
-}
-
-type BaseRepository[TEntity IBaseEntity[TID], TID comparable] struct {
-}
-
-func NewRepository[TEntity IBaseEntity[TID], TID comparable]() *BaseRepository[TEntity, TID] {
-	return &BaseRepository[TEntity, TID]{}
-}
-
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
-	v := NewRepository[T, int32]()
-	fmt.Println(v)
+	api.main()
 }
