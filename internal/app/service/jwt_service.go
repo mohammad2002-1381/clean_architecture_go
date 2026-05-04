@@ -68,7 +68,7 @@ func (s *jwtTokenService) ValidateToken(tokenString string) (*TokenClaims, error
 	exp, _ := claims["exp"].(float64)
 
 	return &TokenClaims{
-		UserID:    int32(userID),
+		UserID:    uint(userID),
 		Role:      role,
 		ExpiresAt: time.Unix(int64(exp), 0),
 	}, nil

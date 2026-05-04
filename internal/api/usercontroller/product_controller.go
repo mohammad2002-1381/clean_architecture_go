@@ -1,4 +1,4 @@
-package api
+package usercontroller
 
 import (
 	"net/http"
@@ -16,7 +16,7 @@ type ProductController struct {
 	getListHandler *productapp.GetProductListQueryHandler
 }
 
-func NewProductController(
+func newProductController(
 	create *productapp.CreateProductCommandHandler,
 	update *productapp.UpdateProductCommandHandler,
 	getById *productapp.GetProductByIdQueryHandler,
@@ -30,7 +30,7 @@ func NewProductController(
 	}
 }
 
-func (pc *ProductController) RegisterRoutes(router *gin.RouterGroup, authMiddleware gin.HandlerFunc) *gin.RouterGroup {
+func (pc *ProductController) registerRoutes(router *gin.RouterGroup, authMiddleware gin.HandlerFunc) *gin.RouterGroup {
 	products := router.Group("/products")
 
 	products.Use(authMiddleware)
@@ -55,7 +55,7 @@ func (pc *ProductController) RegisterRoutes(router *gin.RouterGroup, authMiddlew
 // @Success      201  {object}  productapp.ProductDTO
 // @Failure      400  {object}  map[string]string "error"
 // @Failure      500  {object}  map[string]string "error"
-// @Router       /products [post]
+// @Router       /api/v1/products [post]
 func (pc *ProductController) Create(c *gin.Context) {
 	var cmd productapp.CreateProductCommand
 
@@ -85,7 +85,7 @@ func (pc *ProductController) Create(c *gin.Context) {
 // @Success      200  {object}  productapp.ProductDTO
 // @Failure      400  {object}  map[string]string "error"
 // @Failure      500  {object}  map[string]string "error"
-// @Router       /products/{id} [put]
+// @Router       /api/v1/products/{id} [put]
 func (pc *ProductController) Update(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.ParseUint(idParam, 10, 32)
@@ -121,7 +121,7 @@ func (pc *ProductController) Update(c *gin.Context) {
 // @Success      200  {object}  productapp.ProductDTO
 // @Failure      400  {object}  map[string]string "error"
 // @Failure      404  {object}  map[string]string "error"
-// @Router       /products/{id} [get]
+// @Router       /api/v1/products/{id} [get]
 func (pc *ProductController) GetById(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.ParseUint(idParam, 10, 32)
@@ -151,7 +151,7 @@ func (pc *ProductController) GetById(c *gin.Context) {
 // @Success      200  {array}   productapp.ProductDTO
 // @Failure      400  {object}  map[string]string "error"
 // @Failure      500  {object}  map[string]string "error"
-// @Router       /products [get]
+// @Router       /api/v1/products [get]
 func (pc *ProductController) GetList(c *gin.Context) {
 	var query productapp.GetProductListQuery
 

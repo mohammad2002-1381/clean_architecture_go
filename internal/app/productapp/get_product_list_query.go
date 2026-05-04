@@ -2,6 +2,7 @@ package productapp
 
 import (
 	"context"
+	"go-ca/internal/app"
 	"go-ca/internal/app/service"
 	"go-ca/internal/domain"
 )
@@ -25,7 +26,7 @@ func NewGetProductListQueryHandler(
 	}
 }
 
-func (q *GetProductListQueryHandler) Handle(ctx context.Context, request GetProductListQuery) (*domain.PaginatedResult[ProductDto], error) {
+func (q *GetProductListQueryHandler) Handle(ctx context.Context, request GetProductListQuery) (*domain.PaginatedResult[ProductDTO], error) {
 	userID, e := q.currentUserService.GetUserID(ctx)
 
 	if e != nil {
@@ -35,20 +36,10 @@ func (q *GetProductListQueryHandler) Handle(ctx context.Context, request GetProd
 	products, err := q.productRepo.Where(ctx, &domain.Product{
 		UserID: userID,
 	}).GetPaged(ctx, request.PaginationParams)
-	
+
 	if err != nil {
 		return nil, err
 	}
 
-	var dtos []ProductDto
-	for _, p := range products.Items {
-		dto := NewProductDto(&p)
-		dtos = append(dtos, dto)
-	}
-
-	return &domain.PaginatedResult[ProductDto]{
-		Items:      dtos,
-		PageSize:   products.PageSize,
-		PageNumber: products.PageNumber,
-	}, nil
+	return app.MapPaginatedResult(&products, NewProductDTO), nil
 }

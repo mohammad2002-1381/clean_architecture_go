@@ -6,25 +6,37 @@ import (
 )
 
 type UserDTO struct {
-	ID        uint                `json:"id"`
-	FirstName string              `json:"first_name"`
-	LastName  string              `json:"last_name"`
-	Email     string              `json:"email"`
-	Role      domain.UserRoleType `json:"role"`
-	IsActive  bool                `json:"is_active"`
-	CreatedAt string              `json:"created_at"`
-	UpdatedAt string              `json:"updated_at"`
+	ID        uint   `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Role      string `json:"role"`
+	IsActive  bool   `json:"is_active"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 }
 
-func NewUserDTO(u *domain.User) UserDTO {
-	return UserDTO{
-		ID:        u.ID,
-		FirstName: u.FirstName,
-		LastName:  u.LastName,
-		Email:     u.Email,
-		Role:      u.Role,
-		IsActive:  u.IsActive,
-		CreatedAt: u.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: u.UpdatedAt.Format(time.RFC3339),
+func NewUserDTO(user *domain.User) UserDTO {
+	if user == nil {
+		return UserDTO{}
 	}
+
+	return UserDTO{
+		ID:        user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		Role:      string(user.Role),
+		IsActive:  user.IsActive,
+		CreatedAt: user.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: user.UpdatedAt.Format(time.RFC3339),
+	}
+}
+
+func NewUserDTOList(users []domain.User) []UserDTO {
+	userDtos := make([]UserDTO, 0, len(users))
+	for _, u := range users {
+		userDtos = append(userDtos, NewUserDTO(&u))
+	}
+	return userDtos
 }

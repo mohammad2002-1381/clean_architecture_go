@@ -1,4 +1,4 @@
-package api
+package usercontroller
 
 import (
 	"net/http"
@@ -16,7 +16,7 @@ type UserController struct {
 	currentUserService service.CurrentUserService
 }
 
-func NewUserController(
+func newUserController(
 	register *userapp.RegisterUserCommandHandler,
 	login *userapp.LoginUserCommandHandler,
 	getUser *userapp.GetUserQueryHandler,
@@ -30,7 +30,7 @@ func NewUserController(
 	}
 }
 
-func (uc *UserController) RegisterRoutes(router *gin.RouterGroup, authMiddleware gin.HandlerFunc) *gin.RouterGroup {
+func (uc *UserController) registerRoutes(router *gin.RouterGroup, authMiddleware gin.HandlerFunc) *gin.RouterGroup {
 	users := router.Group("/users")
 	{
 		users.POST("/register", uc.Register)
@@ -56,7 +56,7 @@ func (uc *UserController) RegisterRoutes(router *gin.RouterGroup, authMiddleware
 // @Success      201  {object}  userapp.AuthDTO
 // @Failure      400  {object}  map[string]string "error"
 // @Failure      500  {object}  map[string]string "error"
-// @Router       /users/register [post]
+// @Router       /api/v1/users/register [post]
 func (uc *UserController) Register(c *gin.Context) {
 	var cmd userapp.RegisterUserCommand
 
@@ -84,7 +84,7 @@ func (uc *UserController) Register(c *gin.Context) {
 // @Success      200  {object}  userapp.AuthDTO
 // @Failure      400  {object}  map[string]string "error"
 // @Failure      401  {object}  map[string]string "error"
-// @Router       /users/login [post]
+// @Router       /api/v1/users/login [post]
 func (uc *UserController) Login(c *gin.Context) {
 	var cmd userapp.LoginUserCommand
 
@@ -109,18 +109,18 @@ func (uc *UserController) Login(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request body userapp.GetUserQuery true "Query context"
+// @Param        request query userapp.GetUserQuery true "Query context"
 // @Success      200  {object}  userapp.UserDTO
 // @Failure      400  {object}  map[string]string "error"
 // @Failure      404  {object}  map[string]string "error"
-// @Router       /users [get]
+// @Router       /api/v1/users [get]
 func (uc *UserController) GetCurrentUser(c *gin.Context) {
 	var query userapp.GetUserQuery
 
-	if err := c.ShouldBindJSON(&query); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload: " + err.Error()})
-		return
-	}
+	// if err := c.ShouldBindJSON(&query); err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload: " + err.Error()})
+	// 	return
+	// }
 
 	dto, err := uc.getUserHandler.Handle(c.Request.Context(), query)
 	if err != nil {

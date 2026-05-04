@@ -7,7 +7,7 @@ import (
 )
 
 type TokenClaims struct {
-	UserID    int32
+	UserID    uint
 	Role      string
 	ExpiresAt time.Time
 }

@@ -27,7 +27,7 @@ func NewUpdateProductCommandHandler(
 	}
 }
 
-func (c *UpdateProductCommandHandler) Handle(ctx context.Context, request UpdateProductCommand) (*ProductDto, error) {
+func (c *UpdateProductCommandHandler) Handle(ctx context.Context, request UpdateProductCommand) (*ProductDTO, error) {
 	userID, e := c.currentUserService.GetUserID(ctx)
 
 	if e != nil {
@@ -51,6 +51,6 @@ func (c *UpdateProductCommandHandler) Handle(ctx context.Context, request Update
 		return nil, err
 	}
 
-	dto := NewProductDto(p)
+	dto := NewProductDTO(p)
 	return &dto, nil
 }

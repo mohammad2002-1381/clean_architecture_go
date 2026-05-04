@@ -3,6 +3,9 @@ package infra
 import (
 	"context"
 	"errors"
+	"reflect"
+	"time"
+
 	"go-ca/internal/domain"
 
 	"gorm.io/gorm"
@@ -18,48 +21,39 @@ func NewBaseRepository[T any, TID comparable](db *gorm.DB) BaseRepository[T, TID
 	}
 }
 
-func (r *BaseRepository[T, TID]) dispatchEvents(ctx context.Context, entity *T) {
-	// Cast the entity to IBaseEntity to access notifications
-	// if baseEntity, ok := any(entity).(domain.IBaseEntity[TID]); ok {
-	// 	payloads := baseEntity.GetNotifications()
+// setTimestamps is a private method to handle CreatedAt and UpdatedAt
+func (r *BaseRepository[T, TID]) setTimestamps(entity *T, isInsert bool) {
+	now := time.Now()
+	val := reflect.ValueOf(entity).Elem() // get the underlying struct
 
-	// 	if len(payloads) > 0 {
-	// 		allSuccess := true
+	if isInsert {
+		createdAtField := val.FieldByName("CreatedAt")
+		if createdAtField.IsValid() && createdAtField.CanSet() {
+			createdAtField.Set(reflect.ValueOf(now))
+		}
+	}
 
-	// 		for _, payload := range payloads {
-	// 			// Execute the handler attached to the notification
-	// 			if err := payload.Handler(ctx, payload.Notification); err != nil {
-	// 				// In a production app, you might want to log this error
-	// 				allSuccess = false
-	// 			}
-	// 		}
-
-	// 		// Clear notifications if all handlers succeeded
-	// 		// (matches your previous dispatcher logic)
-	// 		if allSuccess {
-	// 			baseEntity.ClearNotifications()
-	// 		}
-	// 	}
-	// }
+	updatedAtField := val.FieldByName("UpdatedAt")
+	if updatedAtField.IsValid() && updatedAtField.CanSet() {
+		updatedAtField.Set(reflect.ValueOf(now))
+	}
 }
 
 func (r *BaseRepository[T, TID]) Add(ctx context.Context, entity *T) error {
+	// 1: Insertion => Set both CreatedAt and UpdatedAt
+	r.saveEntityAsync(entity, true)
 	if err := r.db.WithContext(ctx).Create(entity).Error; err != nil {
 		return err
 	}
-	r.dispatchEvents(ctx, entity)
 	return nil
 }
 
-// func (r *BaseRepository[T, TID]) saveEntityAsync(ctx context.Context, entity *T) error {
-// 	entity
-// }
-
 func (r *BaseRepository[T, TID]) Update(ctx context.Context, entity *T) error {
+	// 2: Update => Set only UpdatedAt
+	r.saveEntityAsync(entity, false)
 	if err := r.db.WithContext(ctx).Save(entity).Error; err != nil {
 		return err
 	}
-	r.dispatchEvents(ctx, entity)
 	return nil
 }
 
@@ -95,6 +89,10 @@ func (r *BaseRepository[T, TID]) Delete(ctx context.Context, id TID) error {
 func (r *BaseRepository[T, TID]) Where(ctx context.Context, filter *T) domain.BaseRepository[T, TID] {
 	r.db = r.db.WithContext(ctx).Where(filter)
 	return r
+}
+
+func (r *BaseRepository[T, TID]) saveEntityAsync(entity *T, inserted bool) {
+	r.setTimestamps(entity, inserted)
 }
 
 func (r *BaseRepository[T, TID]) Or(ctx context.Context, filter *T) domain.BaseRepository[T, TID] {

@@ -35,7 +35,7 @@ func NewCreateProductCommandHandler(
 	}
 }
 
-func (c *CreateProductCommandHandler) Handle(ctx context.Context, request CreateProductCommand) (*ProductDto, error) {
+func (c *CreateProductCommandHandler) Handle(ctx context.Context, request CreateProductCommand) (*ProductDTO, error) {
 	event := notification.UserRegisteredEvent{
 		NewEmail: "test",
 	}
@@ -67,7 +67,7 @@ func (c *CreateProductCommandHandler) Handle(ctx context.Context, request Create
 		return nil, err
 	}
 
-	dto := NewProductDto(&p)
+	dto := NewProductDTO(&p)
 
 	return &dto, nil
 }

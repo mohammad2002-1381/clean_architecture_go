@@ -25,7 +25,7 @@ func NewGetProductByIdQueryHandler(
 	}
 }
 
-func (q *GetProductByIdQueryHandler) Handle(ctx context.Context, request GetProductByIdQuery) (*ProductDto, error) {
+func (q *GetProductByIdQueryHandler) Handle(ctx context.Context, request GetProductByIdQuery) (*ProductDTO, error) {
 	userID, err := q.currentUserService.GetUserID(ctx)
 	if err != nil {
 		return nil, err
@@ -41,6 +41,6 @@ func (q *GetProductByIdQueryHandler) Handle(ctx context.Context, request GetProd
 		return nil, err
 	}
 
-	dto := NewProductDto(p)
+	dto := NewProductDTO(p)
 	return &dto, nil
 }

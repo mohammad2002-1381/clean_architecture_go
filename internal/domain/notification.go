@@ -1,7 +1,3 @@
 package domain
 
-import "context"
-
-type Notification interface {
-	EventHandler(context.Context)
-}
+type Notification any

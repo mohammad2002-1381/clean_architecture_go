@@ -6,7 +6,7 @@ import (
 	"go-ca/internal/domain"
 )
 
-type ProductDto struct {
+type ProductDTO struct {
 	ID          uint       `json:"id"`
 	Name        string     `json:"name"`
 	Description *string    `json:"description"`
@@ -16,7 +16,7 @@ type ProductDto struct {
 	UpdatedAt   string     `json:"updated_at"`
 }
 
-func NewProductDto(product *domain.Product) ProductDto {
+func NewProductDTO(product *domain.Product) ProductDTO {
 	var itemsDto []*ItemDto
 
 	for _, item := range product.Items {
@@ -29,7 +29,7 @@ func NewProductDto(product *domain.Product) ProductDto {
 		})
 	}
 
-	return ProductDto{
+	return ProductDTO{
 		ID:          product.ID,
 		Name:        product.Name,
 		Description: product.Description,

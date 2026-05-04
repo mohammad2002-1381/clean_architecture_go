@@ -1,0 +1,443 @@
+definitions:
+  go-ca_internal_app_productapp.CreateItemCommand:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  go-ca_internal_app_productapp.CreateProductCommand:
+    properties:
+      description:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/go-ca_internal_app_productapp.CreateItemCommand'
+        type: array
+      name:
+        type: string
+      price:
+        type: number
+    type: object
+  go-ca_internal_app_productapp.ItemDto:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      product:
+        $ref: '#/definitions/go-ca_internal_app_productapp.ProductDTO'
+      updated_at:
+        type: string
+    type: object
+  go-ca_internal_app_productapp.ProductDTO:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/go-ca_internal_app_productapp.ItemDto'
+        type: array
+      name:
+        type: string
+      price:
+        type: number
+      updated_at:
+        type: string
+    type: object
+  go-ca_internal_app_productapp.UpdateProductCommand:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+    type: object
+  go-ca_internal_app_userapp.AuthDTO:
+    properties:
+      refresh_token:
+        type: string
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/go-ca_internal_app_userapp.UserDTO'
+    type: object
+  go-ca_internal_app_userapp.LoginUserCommand:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  go-ca_internal_app_userapp.RegisterUserCommand:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+      role:
+        $ref: '#/definitions/go-ca_internal_domain.UserRoleType'
+    type: object
+  go-ca_internal_app_userapp.UserDTO:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      last_name:
+        type: string
+      role:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  go-ca_internal_domain.PaginatedResult-go-ca_internal_app_userapp_UserDTO:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/go-ca_internal_app_userapp.UserDTO'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  go-ca_internal_domain.UserRoleType:
+    enum:
+    - admin
+    - user
+    type: string
+    x-enum-varnames:
+    - RoleAdmin
+    - RoleUser
+info:
+  contact: {}
+  description: This is the API documentation for the Go application.
+  title: Clean Architecture Go API
+  version: "1.0"
+paths:
+  /api/v1/admin/users:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of users (Admin only)
+      parameters:
+      - in: query
+        name: desc
+        type: boolean
+      - in: query
+        name: disable_paging
+        type: boolean
+      - in: query
+        name: page_number
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/go-ca_internal_domain.PaginatedResult-go-ca_internal_app_userapp_UserDTO'
+        "400":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get a list of users
+      tags:
+      - admin-users
+  /api/v1/products:
+    get:
+      description: Retrieves a paginated list of products based on query parameters
+      parameters:
+      - in: query
+        name: desc
+        type: boolean
+      - in: query
+        name: disable_paging
+        type: boolean
+      - in: query
+        name: page_number
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/go-ca_internal_app_productapp.ProductDTO'
+            type: array
+        "400":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List products
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Adds a new product to the system
+      parameters:
+      - description: Product details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/go-ca_internal_app_productapp.CreateProductCommand'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/go-ca_internal_app_productapp.ProductDTO'
+        "400":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a product
+      tags:
+      - products
+  /api/v1/products/{id}:
+    get:
+      description: Retrieves a specific product by its ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/go-ca_internal_app_productapp.ProductDTO'
+        "400":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get a product by ID
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing product's information
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated product details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/go-ca_internal_app_productapp.UpdateProductCommand'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/go-ca_internal_app_productapp.ProductDTO'
+        "400":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a product
+      tags:
+      - products
+  /api/v1/users:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the profile of the currently authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/go-ca_internal_app_userapp.UserDTO'
+        "400":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - users
+  /api/v1/users/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns an access token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/go-ca_internal_app_userapp.LoginUserCommand'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/go-ca_internal_app_userapp.AuthDTO'
+        "400":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login user
+      tags:
+      - users
+  /api/v1/users/register:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user account
+      parameters:
+      - description: User registration info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/go-ca_internal_app_userapp.RegisterUserCommand'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/go-ca_internal_app_userapp.AuthDTO'
+        "400":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a user
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
