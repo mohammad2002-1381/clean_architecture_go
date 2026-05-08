@@ -53,7 +53,7 @@ func registerUserModule(
 	authMiddleware gin.HandlerFunc,
 ) {
 	registerHandler := userapp.NewRegisterUserCommandHandler(userRepo, passSvc, jwtSvc)
-	loginHandler := userapp.NewLoginUserCommandHandler(userRepo, passSvc, jwtSvc)
+	loginHandler := userapp.NewLoginUserCommandHandler(userRepo, tokenRepo, passSvc, jwtSvc)
 	getUserHandler := userapp.NewGetUserQueryHandler(userRepo, currentUserSvc)
 	refreshTokenHandler := userapp.NewRefreshTokenCommandHandler(tokenRepo, currentUserSvc, jwtSvc)
 

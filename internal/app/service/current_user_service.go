@@ -31,11 +31,12 @@ func (s *currentUserService) GetUserID(ctx context.Context) (uint, error) {
 
 func (s *currentUserService) GetUserRole(ctx context.Context) (domain.UserRoleType, error) {
 	val := ctx.Value(RoleKey)
-	role, ok := val.(domain.UserRoleType)
+	println(val)
+	role, ok := val.(string)
 	if !ok {
 		return "", errors.New("role not found or invalid type in context")
 	}
-	return role, nil
+	return domain.UserRoleType(role), nil
 }
 
 func (s *currentUserService) GetToken(ctx context.Context) (string, error) {

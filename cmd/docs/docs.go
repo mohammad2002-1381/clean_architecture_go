@@ -428,6 +428,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/users/refresh_token": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Refresh user token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Refresh user token",
+                "parameters": [
+                    {
+                        "description": "RefreshToken credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/go-ca_internal_app_userapp.RefreshTokenCommand"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/go-ca_internal_app_userapp.TokenDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users/register": {
             "post": {
                 "description": "Creates a new user account",
@@ -607,6 +664,14 @@ const docTemplate = `{
                 }
             }
         },
+        "go-ca_internal_app_userapp.RefreshTokenCommand": {
+            "type": "object",
+            "properties": {
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
         "go-ca_internal_app_userapp.RegisterUserCommand": {
             "type": "object",
             "properties": {
@@ -624,6 +689,17 @@ const docTemplate = `{
                 },
                 "role": {
                     "$ref": "#/definitions/go-ca_internal_domain.UserRoleType"
+                }
+            }
+        },
+        "go-ca_internal_app_userapp.TokenDTO": {
+            "type": "object",
+            "properties": {
+                "refresh_token": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
                 }
             }
         },

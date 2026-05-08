@@ -15,12 +15,14 @@ type LoginUserCommand struct {
 
 type LoginUserCommandHandler struct {
 	userRepo        domain.BaseRepository[*domain.User, uint]
+	tokenRepo       domain.BaseRepository[*domain.Token, uint]
 	passwordService service.PasswordService
 	jwtService      service.JWTService
 }
 
 func NewLoginUserCommandHandler(
 	userRepo domain.BaseRepository[*domain.User, uint],
+	tokenRepo domain.BaseRepository[*domain.Token, uint],
 	passwordService service.PasswordService,
 	jwtService service.JWTService,
 ) LoginUserCommandHandler {
@@ -28,6 +30,7 @@ func NewLoginUserCommandHandler(
 		userRepo:        userRepo,
 		passwordService: passwordService,
 		jwtService:      jwtService,
+		tokenRepo:       tokenRepo,
 	}
 }
 
@@ -55,6 +58,14 @@ func (c *LoginUserCommandHandler) Handle(ctx context.Context, request LoginUserC
 
 	refreshToken, err := c.jwtService.GenerateRefreshToken(user.ID)
 	if err != nil {
+		return nil, err
+	}
+
+	tokenEn := domain.NewToken(token, refreshToken, user.ID)
+
+	tokenErr := c.tokenRepo.Add(ctx, tokenEn)
+
+	if tokenErr != nil {
 		return nil, err
 	}
 

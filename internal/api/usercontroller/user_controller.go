@@ -29,6 +29,7 @@ func newUserController(
 		loginHandler:       login,
 		getUserHandler:     getUser,
 		currentUserService: currentUserSvc,
+		refreshTokenHandler: refreshTokenHandler,
 	}
 }
 
@@ -134,12 +135,13 @@ func (uc *UserController) GetCurrentUser(c *gin.Context) {
 	c.JSON(http.StatusOK, dto)
 }
 
-// Login godoc
+// RefreshToken godoc
 // @Summary      Refresh user token
 // @Description  Refresh user token
 // @Tags         users
 // @Accept       json
 // @Produce      json
+// @Security     BearerAuth
 // @Param        request body userapp.RefreshTokenCommand true "RefreshToken credentials"
 // @Success      200  {object}  userapp.TokenDTO
 // @Failure      400  {object}  map[string]string "error"

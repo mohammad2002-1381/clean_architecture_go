@@ -7,11 +7,11 @@ type Token struct {
 	Token        string    `gorm:"column:token;not null"`
 	RefreshToken string    `gorm:"column:refresh_token;not null"`
 	Expires      time.Time `gorm:"column:expires;not null"`
-	UserID       int32     `gorm:"column:user_id;not null;index"`
+	UserID       uint     `gorm:"column:user_id;not null;index"`
 	User         *User     `gorm:"foreignKey:UserID;constraint:OnUpdate:NO ACTION,OnDelete:CASCADE"`
 }
 
-func NewToken(token, refreshToken string, userID int32) *Token {
+func NewToken(token, refreshToken string, userID uint) *Token {
 	now := time.Now().UTC()
 	return &Token{
 		BaseEntity: BaseEntity[uint]{

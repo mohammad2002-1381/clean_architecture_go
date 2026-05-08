@@ -80,6 +80,11 @@ definitions:
       password:
         type: string
     type: object
+  go-ca_internal_app_userapp.RefreshTokenCommand:
+    properties:
+      refresh_token:
+        type: string
+    type: object
   go-ca_internal_app_userapp.RegisterUserCommand:
     properties:
       email:
@@ -92,6 +97,13 @@ definitions:
         type: string
       role:
         $ref: '#/definitions/go-ca_internal_domain.UserRoleType'
+    type: object
+  go-ca_internal_app_userapp.TokenDTO:
+    properties:
+      refresh_token:
+        type: string
+      token:
+        type: string
     type: object
   go-ca_internal_app_userapp.UserDTO:
     properties:
@@ -398,6 +410,42 @@ paths:
               type: string
             type: object
       summary: Login user
+      tags:
+      - users
+  /api/v1/users/refresh_token:
+    post:
+      consumes:
+      - application/json
+      description: Refresh user token
+      parameters:
+      - description: RefreshToken credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/go-ca_internal_app_userapp.RefreshTokenCommand'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/go-ca_internal_app_userapp.TokenDTO'
+        "400":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Refresh user token
       tags:
       - users
   /api/v1/users/register:

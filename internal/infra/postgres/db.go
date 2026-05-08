@@ -13,6 +13,6 @@ func NewDatabase(dsn string) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	err = db.AutoMigrate(&domain.Product{}, &domain.Item{})
+	err = db.AutoMigrate(&domain.Product{}, &domain.Item{}, &domain.User{}, &domain.Token{})
 	return db, err
 }
