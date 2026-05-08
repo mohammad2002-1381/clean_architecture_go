@@ -13,6 +13,7 @@ type contextKey string
 const (
 	UserIDKey contextKey = "user_id"
 	RoleKey   contextKey = "role"
+	TokenKey  contextKey = "token"
 )
 
 func NewCurrentUserService() *currentUserService {
@@ -35,4 +36,13 @@ func (s *currentUserService) GetUserRole(ctx context.Context) (domain.UserRoleTy
 		return "", errors.New("role not found or invalid type in context")
 	}
 	return role, nil
+}
+
+func (s *currentUserService) GetToken(ctx context.Context) (string, error) {
+	val := ctx.Value(TokenKey)
+	token, ok := val.(string)
+	if !ok {
+		return "", errors.New("token not found")
+	}
+	return token, nil
 }

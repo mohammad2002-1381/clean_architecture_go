@@ -10,8 +10,9 @@ import (
 )
 
 func RegisterUserController(
-	userRepo domain.BaseRepository[domain.User, uint],
-	productRepo domain.BaseRepository[domain.Product, uint],
+	userRepo domain.BaseRepository[*domain.User, uint],
+	tokenRepo domain.BaseRepository[*domain.Token, uint],
+	productRepo domain.BaseRepository[*domain.Product, uint],
 	routerGroup *gin.RouterGroup,
 	jwtSvc service.JWTService,
 	passSvc service.PasswordService,
@@ -19,11 +20,11 @@ func RegisterUserController(
 	authMiddleware gin.HandlerFunc,
 ) {
 	registerProductModule(routerGroup, productRepo, authMiddleware, currentUserSvc)
-	registerUserModule(userRepo, routerGroup, jwtSvc, passSvc, currentUserSvc, authMiddleware)
+	registerUserModule(userRepo, tokenRepo, routerGroup, jwtSvc, passSvc, currentUserSvc, authMiddleware)
 }
 
 func registerProductModule(routerGroup *gin.RouterGroup,
-	productRepo domain.BaseRepository[domain.Product, uint],
+	productRepo domain.BaseRepository[*domain.Product, uint],
 	authMiddleware gin.HandlerFunc,
 	currentUserService service.CurrentUserService,
 ) {
@@ -43,7 +44,8 @@ func registerProductModule(routerGroup *gin.RouterGroup,
 }
 
 func registerUserModule(
-	userRepo domain.BaseRepository[domain.User, uint],
+	userRepo domain.BaseRepository[*domain.User, uint],
+	tokenRepo domain.BaseRepository[*domain.Token, uint],
 	routerGroup *gin.RouterGroup,
 	jwtSvc service.JWTService,
 	passSvc service.PasswordService,
@@ -53,11 +55,13 @@ func registerUserModule(
 	registerHandler := userapp.NewRegisterUserCommandHandler(userRepo, passSvc, jwtSvc)
 	loginHandler := userapp.NewLoginUserCommandHandler(userRepo, passSvc, jwtSvc)
 	getUserHandler := userapp.NewGetUserQueryHandler(userRepo, currentUserSvc)
+	refreshTokenHandler := userapp.NewRefreshTokenCommandHandler(tokenRepo, currentUserSvc, jwtSvc)
 
 	userController := newUserController(
 		&registerHandler,
 		&loginHandler,
 		&getUserHandler,
+		&refreshTokenHandler,
 		currentUserSvc,
 	)
 

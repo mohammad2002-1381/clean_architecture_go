@@ -2,10 +2,12 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"go-ca/internal/api/admincontroller"
 	"go-ca/internal/api/middleware"
 	"go-ca/internal/api/usercontroller"
+	"go-ca/internal/app/notification"
 	"go-ca/internal/app/service"
 	"go-ca/internal/domain"
 	"go-ca/internal/infra"
@@ -14,6 +16,7 @@ import (
 	_ "go-ca/cmd/docs"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -28,16 +31,28 @@ import (
 // @name Authorization
 // @description Type "Bearer" followed by a space and JWT token.
 func main() {
-	db, err := postgres.NewDatabase("host=87.248.131.253 user=shahiapp_user password=shahiapp_password dbname=clean_architecture_go port=5432")
+	if err := godotenv.Load(); err != nil {
+		log.Println("Warning: No .env file found, falling back to environment variables")
+	}
+
+	// Fetch environment variables
+	dbConfig := os.Getenv("DB_CONFIG")
+	jwtSecret := os.Getenv("JWT_SECRET")
+	port := os.Getenv("PORT")
+
+	db, err := postgres.NewDatabase(dbConfig)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	userRepo := infra.NewBaseRepository[domain.User, uint](db)
-	productRepo := infra.NewBaseRepository[domain.Product, uint](db)
-	jwtService := service.NewJwtService("your-super-secret-key")
+	userRepo := infra.NewBaseRepository[*domain.User, uint](db)
+	productRepo := infra.NewBaseRepository[*domain.Product, uint](db)
+	tokenRepo := infra.NewBaseRepository[*domain.Token, uint](db)
+	jwtService := service.NewJwtService(jwtSecret)
 	passwordService := service.NewPasswordService()
 	currentUserService := service.NewCurrentUserService()
+
+	RegisterEvents()
 
 	router := gin.Default()
 
@@ -49,6 +64,7 @@ func main() {
 
 	usercontroller.RegisterUserController(
 		&userRepo,
+		&tokenRepo,
 		&productRepo,
 		v1Group,
 		jwtService,
@@ -59,7 +75,12 @@ func main() {
 
 	admincontroller.RegisterAdminController(v1Group, &userRepo, authMiddleware)
 
-	if err := router.Run(":8000"); err != nil {
+	if err := router.Run(":" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
+}
+
+func RegisterEvents() {
+	productEventHandler := notification.NewCreateProductCommandHandler()
+	domain.RegisterHandler[*domain.ProductCreatedEvent](&productEventHandler)
 }

@@ -10,16 +10,18 @@ import (
 )
 
 type UserController struct {
-	registerHandler    *userapp.RegisterUserCommandHandler
-	loginHandler       *userapp.LoginUserCommandHandler
-	getUserHandler     *userapp.GetUserQueryHandler
-	currentUserService service.CurrentUserService
+	registerHandler     *userapp.RegisterUserCommandHandler
+	loginHandler        *userapp.LoginUserCommandHandler
+	getUserHandler      *userapp.GetUserQueryHandler
+	refreshTokenHandler *userapp.RefreshTokenCommandHandler
+	currentUserService  service.CurrentUserService
 }
 
 func newUserController(
 	register *userapp.RegisterUserCommandHandler,
 	login *userapp.LoginUserCommandHandler,
 	getUser *userapp.GetUserQueryHandler,
+	refreshTokenHandler *userapp.RefreshTokenCommandHandler,
 	currentUserSvc service.CurrentUserService,
 ) *UserController {
 	return &UserController{
@@ -40,6 +42,7 @@ func (uc *UserController) registerRoutes(router *gin.RouterGroup, authMiddleware
 		protected.Use(authMiddleware)
 		{
 			protected.GET("", uc.GetCurrentUser)
+			protected.POST("/refresh_token", uc.RefreshToken)
 		}
 	}
 
@@ -125,6 +128,34 @@ func (uc *UserController) GetCurrentUser(c *gin.Context) {
 	dto, err := uc.getUserHandler.Handle(c.Request.Context(), query)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto)
+}
+
+// Login godoc
+// @Summary      Refresh user token
+// @Description  Refresh user token
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        request body userapp.RefreshTokenCommand true "RefreshToken credentials"
+// @Success      200  {object}  userapp.TokenDTO
+// @Failure      400  {object}  map[string]string "error"
+// @Failure      401  {object}  map[string]string "error"
+// @Router       /api/v1/users/refresh_token [post]
+func (uc *UserController) RefreshToken(c *gin.Context) {
+	var cmd userapp.RefreshTokenCommand
+
+	if err := c.ShouldBindJSON(&cmd); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload: " + err.Error()})
+		return
+	}
+
+	dto, err := uc.refreshTokenHandler.Handle(c.Request.Context(), cmd)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials or " + err.Error()})
 		return
 	}
 

@@ -40,6 +40,7 @@ func AuthMiddleware(tokenService service.JWTService) gin.HandlerFunc {
 		ctx := c.Request.Context()
 		ctx = context.WithValue(ctx, service.UserIDKey, claims.UserID)
 		ctx = context.WithValue(ctx, service.RoleKey, claims.Role)
+		ctx = context.WithValue(ctx, service.TokenKey, tokenString)
 		c.Request = c.Request.WithContext(ctx)
 
 		c.Next()

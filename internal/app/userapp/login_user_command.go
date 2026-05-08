@@ -14,13 +14,13 @@ type LoginUserCommand struct {
 }
 
 type LoginUserCommandHandler struct {
-	userRepo        domain.BaseRepository[domain.User, uint]
+	userRepo        domain.BaseRepository[*domain.User, uint]
 	passwordService service.PasswordService
 	jwtService      service.JWTService
 }
 
 func NewLoginUserCommandHandler(
-	userRepo domain.BaseRepository[domain.User, uint],
+	userRepo domain.BaseRepository[*domain.User, uint],
 	passwordService service.PasswordService,
 	jwtService service.JWTService,
 ) LoginUserCommandHandler {
@@ -39,7 +39,7 @@ func (c *LoginUserCommandHandler) Handle(ctx context.Context, request LoginUserC
 
 	user := users[0]
 
-	if user == nil {
+	if user.ID == 0 {
 		return nil, errors.New("invalid email or password")
 	}
 

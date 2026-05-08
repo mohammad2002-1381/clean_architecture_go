@@ -28,3 +28,11 @@ func NewToken(token, refreshToken string, userID int32) *Token {
 func (t *Token) IsActive() bool {
 	return t.Expires.After(time.Now().UTC())
 }
+
+func (t *Token) SetToken(value string) {
+	t.Token = value
+}
+
+func (t *Token) SetRefreshToken(value string) {
+	t.RefreshToken = value
+}

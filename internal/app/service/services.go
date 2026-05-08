@@ -26,6 +26,7 @@ type PasswordService interface {
 type CurrentUserService interface {
 	GetUserID(context.Context) (uint, error)
 	GetUserRole(context.Context) (domain.UserRoleType, error)
+	GetToken(context.Context) (string, error)
 }
 
 func NewJwtService(secret string) JWTService {

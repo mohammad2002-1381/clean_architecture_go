@@ -14,12 +14,12 @@ type UpdateProductCommand struct {
 }
 
 type UpdateProductCommandHandler struct {
-	productRepo        domain.BaseRepository[domain.Product, uint]
+	productRepo        domain.BaseRepository[*domain.Product, uint]
 	currentUserService service.CurrentUserService
 }
 
 func NewUpdateProductCommandHandler(
-	productRepo domain.BaseRepository[domain.Product, uint],
+	productRepo domain.BaseRepository[*domain.Product, uint],
 	currentUserService service.CurrentUserService,
 ) UpdateProductCommandHandler {
 	return UpdateProductCommandHandler{

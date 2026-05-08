@@ -12,12 +12,12 @@ type GetProductListQuery struct {
 }
 
 type GetProductListQueryHandler struct {
-	productRepo        domain.BaseRepository[domain.Product, uint]
+	productRepo        domain.BaseRepository[*domain.Product, uint]
 	currentUserService service.CurrentUserService
 }
 
 func NewGetProductListQueryHandler(
-	productRepo domain.BaseRepository[domain.Product, uint],
+	productRepo domain.BaseRepository[*domain.Product, uint],
 	currentUserService service.CurrentUserService,
 ) GetProductListQueryHandler {
 	return GetProductListQueryHandler{

@@ -11,11 +11,11 @@ type GetUsersListQuery struct {
 }
 
 type GetUsersListQueryHandler struct {
-	userRepo domain.BaseRepository[domain.User, uint]
+	userRepo domain.BaseRepository[*domain.User, uint]
 }
 
 func NewGetUsersListQueryHandler(
-	userRepo domain.BaseRepository[domain.User, uint],
+	userRepo domain.BaseRepository[*domain.User, uint],
 ) GetUsersListQueryHandler {
 	return GetUsersListQueryHandler{
 		userRepo: userRepo,

@@ -10,7 +10,7 @@ import (
 
 func RegisterAdminController(
 	routerGroup *gin.RouterGroup,
-	userRepo domain.BaseRepository[domain.User, uint],
+	userRepo domain.BaseRepository[*domain.User, uint],
 	authMiddleware gin.HandlerFunc,
 ) {
 	roleMiddleware := middleware.RequireRole("admin")
@@ -18,7 +18,7 @@ func RegisterAdminController(
 }
 
 func registerUserModule(
-	userRepo domain.BaseRepository[domain.User, uint],
+	userRepo domain.BaseRepository[*domain.User, uint],
 	router *gin.RouterGroup, authMiddleware gin.HandlerFunc, roleMiddleware gin.HandlerFunc,
 ) {
 	getUserListHandler := userapp.NewGetUsersListQueryHandler(userRepo)

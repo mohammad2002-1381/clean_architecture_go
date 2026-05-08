@@ -2,8 +2,6 @@ package productapp
 
 import (
 	"context"
-
-	"go-ca/internal/app/notification"
 	"go-ca/internal/app/service"
 	"go-ca/internal/domain"
 )
@@ -21,12 +19,12 @@ type CreateItemCommand struct {
 }
 
 type CreateProductCommandHandler struct {
-	productRepo        domain.BaseRepository[domain.Product, uint]
+	productRepo        domain.BaseRepository[*domain.Product, uint]
 	currentUserService service.CurrentUserService
 }
 
 func NewCreateProductCommandHandler(
-	productRepo domain.BaseRepository[domain.Product, uint],
+	productRepo domain.BaseRepository[*domain.Product, uint],
 	currentUserService service.CurrentUserService,
 ) CreateProductCommandHandler {
 	return CreateProductCommandHandler{
@@ -36,10 +34,6 @@ func NewCreateProductCommandHandler(
 }
 
 func (c *CreateProductCommandHandler) Handle(ctx context.Context, request CreateProductCommand) (*ProductDTO, error) {
-	event := notification.UserRegisteredEvent{
-		NewEmail: "test",
-	}
-
 	userID, e := c.currentUserService.GetUserID(ctx)
 
 	if e != nil {
@@ -50,24 +44,23 @@ func (c *CreateProductCommandHandler) Handle(ctx context.Context, request Create
 		request.Description,
 		request.Price,
 		userID,
-		&event,
 	)
 
 	var domainItems []*domain.Item
 	for _, reqItem := range request.Items {
 		newItem := domain.NewItem(reqItem.Name, reqItem.Description)
-		domainItems = append(domainItems, &newItem)
+		domainItems = append(domainItems, newItem)
 	}
 
 	p.SetItems(domainItems)
 
-	err := c.productRepo.Add(ctx, &p)
+	err := c.productRepo.Add(ctx, p)
 
 	if err != nil {
 		return nil, err
 	}
 
-	dto := NewProductDTO(&p)
+	dto := NewProductDTO(p)
 
 	return &dto, nil
 }

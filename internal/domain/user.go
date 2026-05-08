@@ -17,8 +17,8 @@ type User struct {
 	IsActive     bool         `gorm:"column:is_active;default:true"`
 }
 
-func NewUser(firstName, lastName, email, passwordHash string, role UserRoleType, isActive bool) User {
-	return User{
+func NewUser(firstName, lastName, email, passwordHash string, role UserRoleType, isActive bool) *User {
+	return &User{
 		FirstName: firstName,
 		LastName: lastName,
 		Email: email,

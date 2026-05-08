@@ -10,8 +10,8 @@ type Item struct {
 	Product     *Product `gorm:"foreignKey:ProductID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"product,omitempty"`
 }
 
-func NewItem(name string, description *string) Item {
-	return Item{
+func NewItem(name string, description *string) *Item {
+	return &Item{
 		Name:        name,
 		Description: description,
 	}

@@ -16,13 +16,13 @@ type RegisterUserCommand struct {
 }
 
 type RegisterUserCommandHandler struct {
-	userRepo        domain.BaseRepository[domain.User, uint]
+	userRepo        domain.BaseRepository[*domain.User, uint]
 	passwordService service.PasswordService
 	jwtService      service.JWTService
 }
 
 func NewRegisterUserCommandHandler(
-	userRepo domain.BaseRepository[domain.User, uint],
+	userRepo domain.BaseRepository[*domain.User, uint],
 	passwordService service.PasswordService,
 	jwtService service.JWTService,
 ) RegisterUserCommandHandler {
@@ -48,7 +48,7 @@ func (c *RegisterUserCommandHandler) Handle(ctx context.Context, request Registe
 		true,
 	)
 
-	err = c.userRepo.Add(ctx, &u)
+	err = c.userRepo.Add(ctx, u)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (c *RegisterUserCommandHandler) Handle(ctx context.Context, request Registe
 		return nil, err
 	}
 
-	dto := NewAuthDTO(&u, token, refreshToken)
+	dto := NewAuthDTO(u, token, refreshToken)
 
 	return &dto, nil
 }

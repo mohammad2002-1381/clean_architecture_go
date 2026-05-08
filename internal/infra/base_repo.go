@@ -11,20 +11,19 @@ import (
 	"gorm.io/gorm"
 )
 
-type BaseRepository[T any, TID comparable] struct {
+type BaseRepository[T domain.IBaseEntity[TID], TID comparable] struct {
 	db *gorm.DB
 }
 
-func NewBaseRepository[T any, TID comparable](db *gorm.DB) BaseRepository[T, TID] {
+func NewBaseRepository[T domain.IBaseEntity[TID], TID comparable](db *gorm.DB) BaseRepository[T, TID] {
 	return BaseRepository[T, TID]{
 		db: db,
 	}
 }
 
-// setTimestamps is a private method to handle CreatedAt and UpdatedAt
-func (r *BaseRepository[T, TID]) setTimestamps(entity *T, isInsert bool) {
+func (r *BaseRepository[T, TID]) setTimestamps(entity T, isInsert bool) {
 	now := time.Now()
-	val := reflect.ValueOf(entity).Elem() // get the underlying struct
+	val := reflect.ValueOf(entity).Elem()
 
 	if isInsert {
 		createdAtField := val.FieldByName("CreatedAt")
@@ -39,44 +38,44 @@ func (r *BaseRepository[T, TID]) setTimestamps(entity *T, isInsert bool) {
 	}
 }
 
-func (r *BaseRepository[T, TID]) Add(ctx context.Context, entity *T) error {
+func (r *BaseRepository[T, TID]) Add(ctx context.Context, entity T) error {
 	// 1: Insertion => Set both CreatedAt and UpdatedAt
-	r.saveEntityAsync(entity, true)
 	if err := r.db.WithContext(ctx).Create(entity).Error; err != nil {
 		return err
 	}
+	r.saveEntityAsync(ctx, entity, true)
 	return nil
 }
 
-func (r *BaseRepository[T, TID]) Update(ctx context.Context, entity *T) error {
+func (r *BaseRepository[T, TID]) Update(ctx context.Context, entity T) error {
 	// 2: Update => Set only UpdatedAt
-	r.saveEntityAsync(entity, false)
 	if err := r.db.WithContext(ctx).Save(entity).Error; err != nil {
 		return err
 	}
+	r.saveEntityAsync(ctx, entity, false)
 	return nil
 }
 
-func (r *BaseRepository[T, TID]) Find(ctx context.Context, id TID) (*T, error) {
+func (r *BaseRepository[T, TID]) Find(ctx context.Context, id TID) (T, error) {
 	var entity T
 	err := r.db.WithContext(ctx).First(&entity, "id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
+			return entity, nil
 		}
-		return nil, err
+		return entity, err
 	}
-	return &entity, nil
+	return entity, nil
 }
 
-func (r *BaseRepository[T, TID]) First(ctx context.Context) (*T, error) {
+func (r *BaseRepository[T, TID]) First(ctx context.Context) (T, error) {
 	var entity T
 	err := r.db.WithContext(ctx).First(&entity).Error
-	return &entity, err
+	return entity, err
 }
 
-func (r *BaseRepository[T, TID]) Get(ctx context.Context) ([]*T, error) {
-	var entities []*T
+func (r *BaseRepository[T, TID]) Get(ctx context.Context) ([]T, error) {
+	var entities []T
 	err := r.db.WithContext(ctx).Find(&entities).Error
 	return entities, err
 }
@@ -86,16 +85,22 @@ func (r *BaseRepository[T, TID]) Delete(ctx context.Context, id TID) error {
 	return r.db.WithContext(ctx).Delete(&entity, "id = ?", id).Error
 }
 
-func (r *BaseRepository[T, TID]) Where(ctx context.Context, filter *T) domain.BaseRepository[T, TID] {
+func (r *BaseRepository[T, TID]) Where(ctx context.Context, filter T) domain.BaseRepository[T, TID] {
 	r.db = r.db.WithContext(ctx).Where(filter)
 	return r
 }
 
-func (r *BaseRepository[T, TID]) saveEntityAsync(entity *T, inserted bool) {
+func (r *BaseRepository[T, TID]) saveEntityAsync(ctx context.Context, entity T, inserted bool) {
 	r.setTimestamps(entity, inserted)
+
+	events := entity.GetNotifications()
+	for _, event := range events {
+		domain.Dispatch(ctx, event)
+	}
+	entity.ClearNotifications()
 }
 
-func (r *BaseRepository[T, TID]) Or(ctx context.Context, filter *T) domain.BaseRepository[T, TID] {
+func (r *BaseRepository[T, TID]) Or(ctx context.Context, filter T) domain.BaseRepository[T, TID] {
 	r.db = r.db.WithContext(ctx).Or(filter)
 	return r
 }

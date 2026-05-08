@@ -10,7 +10,7 @@ type Product struct {
 	User        *User   `gorm:"foreignKey:UserID"`
 }
 
-func NewProduct(name string, description *string, price float64, userID uint, userRegisterdEvent Notification) Product {
+func NewProduct(name string, description *string, price float64, userID uint) *Product {
 	p := Product{
 		Name:        name,
 		Description: description,
@@ -19,9 +19,13 @@ func NewProduct(name string, description *string, price float64, userID uint, us
 		Items:       make([]*Item, 0),
 	}
 
-	p.AddNotification(userRegisterdEvent)
+	event := ProductCreatedEvent{
+		&p,
+	}
 
-	return p
+	p.AddNotification(&event)
+
+	return &p
 }
 
 func (p *Product) SetName(value string) {

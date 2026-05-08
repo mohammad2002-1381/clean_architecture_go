@@ -9,12 +9,12 @@ import (
 type GetUserQuery struct{}
 
 type GetUserQueryHandler struct {
-	userRepo           domain.BaseRepository[domain.User, uint]
+	userRepo           domain.BaseRepository[*domain.User, uint]
 	currentUserService service.CurrentUserService
 }
 
 func NewGetUserQueryHandler(
-	userRepo	domain.BaseRepository[domain.User, uint],
+	userRepo	domain.BaseRepository[*domain.User, uint],
 	currentUserService service.CurrentUserService,
 ) GetUserQueryHandler {
 	return GetUserQueryHandler{
