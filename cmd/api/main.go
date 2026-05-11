@@ -63,9 +63,9 @@ func main() {
 	v1Group := router.Group("/api/v1")
 
 	usercontroller.RegisterUserController(
-		&userRepo,
-		&tokenRepo,
-		&productRepo,
+		userRepo,
+		tokenRepo,
+		productRepo,
 		v1Group,
 		jwtService,
 		passwordService,
@@ -73,7 +73,7 @@ func main() {
 		authMiddleware,
 	)
 
-	admincontroller.RegisterAdminController(v1Group, &userRepo, authMiddleware)
+	admincontroller.RegisterAdminController(v1Group, userRepo, authMiddleware)
 
 	if err := router.Run(":" + port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
