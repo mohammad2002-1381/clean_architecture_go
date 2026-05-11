@@ -15,8 +15,11 @@ type BaseRepository[T domain.IBaseEntity[TID], TID comparable] struct {
 	db *gorm.DB
 }
 
-func NewBaseRepository[T domain.IBaseEntity[TID], TID comparable](db *gorm.DB) BaseRepository[T, TID] {
-	return BaseRepository[T, TID]{
+// NewBaseRepository creates and returns a new *BaseRepository instance.
+// It returns a pointer to ensure consistent behavior with method receivers
+// and to allow chainable methods to return new instances that implement the interface.
+func NewBaseRepository[T domain.IBaseEntity[TID], TID comparable](db *gorm.DB) *BaseRepository[T, TID] {
+	return &BaseRepository[T, TID]{ // Return a pointer to the struct
 		db: db,
 	}
 }
@@ -58,6 +61,7 @@ func (r *BaseRepository[T, TID]) Update(ctx context.Context, entity T) error {
 
 func (r *BaseRepository[T, TID]) Find(ctx context.Context, id TID) (T, error) {
 	var entity T
+	// r.db here will be the current session, which might have filters applied if chained.
 	err := r.db.WithContext(ctx).First(&entity, "id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -70,24 +74,32 @@ func (r *BaseRepository[T, TID]) Find(ctx context.Context, id TID) (T, error) {
 
 func (r *BaseRepository[T, TID]) First(ctx context.Context) (T, error) {
 	var entity T
+	// r.db here will be the current session, which might have filters applied if chained.
 	err := r.db.WithContext(ctx).First(&entity).Error
 	return entity, err
 }
 
 func (r *BaseRepository[T, TID]) Get(ctx context.Context) ([]T, error) {
 	var entities []T
+	// r.db here will be the current session, which might have filters applied if chained.
 	err := r.db.WithContext(ctx).Find(&entities).Error
 	return entities, err
 }
 
 func (r *BaseRepository[T, TID]) Delete(ctx context.Context, id TID) error {
 	var entity T
+	// r.db here will be the current session, which might have filters applied if chained.
 	return r.db.WithContext(ctx).Delete(&entity, "id = ?", id).Error
 }
 
+// Where returns a NEW BaseRepository instance with the WHERE condition applied.
+// The original repository remains unchanged (immutable).
 func (r *BaseRepository[T, TID]) Where(ctx context.Context, filter T) domain.BaseRepository[T, TID] {
-	r.db = r.db.WithContext(ctx).Where(filter)
-	return r
+	// Create a new GORM session with the context and the filter.
+	newGormDB := r.db.WithContext(ctx).Where(filter)
+	// Return a *NEW* BaseRepository instance that encapsulates this new GORM session.
+	// This ensures immutability for the original 'r' and allows chaining.
+	return &BaseRepository[T, TID]{db: newGormDB}
 }
 
 func (r *BaseRepository[T, TID]) saveEntityAsync(ctx context.Context, entity T, inserted bool) {
@@ -100,15 +112,20 @@ func (r *BaseRepository[T, TID]) saveEntityAsync(ctx context.Context, entity T, 
 	entity.ClearNotifications()
 }
 
+// Or returns a NEW BaseRepository instance with the OR condition applied.
+// The original repository remains unchanged (immutable).
 func (r *BaseRepository[T, TID]) Or(ctx context.Context, filter T) domain.BaseRepository[T, TID] {
-	r.db = r.db.WithContext(ctx).Or(filter)
-	return r
+	// Create a new GORM session with the context and the OR filter.
+	newGormDB := r.db.WithContext(ctx).Or(filter)
+	// Return a *NEW* BaseRepository instance that encapsulates this new GORM session.
+	return &BaseRepository[T, TID]{db: newGormDB}
 }
 
 func (r *BaseRepository[T, TID]) GetPaged(ctx context.Context, params domain.PaginationParams) (domain.PaginatedResult[T], error) {
 	var items []T
 	var total int64
 
+	// r.db here will be the current session, which might have filters applied if chained.
 	db := r.db.WithContext(ctx).Model(new(T))
 
 	if err := db.Count(&total).Error; err != nil {
