@@ -18,8 +18,8 @@ type BaseRepository[T domain.IBaseEntity[TID], TID comparable] struct {
 // NewBaseRepository creates and returns a new *BaseRepository instance.
 // It returns a pointer to ensure consistent behavior with method receivers
 // and to allow chainable methods to return new instances that implement the interface.
-func NewBaseRepository[T domain.IBaseEntity[TID], TID comparable](db *gorm.DB) *BaseRepository[T, TID] {
-	return &BaseRepository[T, TID]{ // Return a pointer to the struct
+func NewBaseRepository[T domain.IBaseEntity[TID], TID comparable](db *gorm.DB) BaseRepository[T, TID] {
+	return BaseRepository[T, TID]{ // Return a pointer to the struct
 		db: db,
 	}
 }
